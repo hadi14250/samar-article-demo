@@ -264,17 +264,21 @@ function ArticleCard({ article }) {
 }
 
 function ArticlesTab() {
-  const [articles, setArticles] = useState([])
+  const [dbArticles, setDbArticles] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     getArticles()
-      .then(data => setArticles(data))
-      .catch(() => setArticles(staticArticles))
+      .then(data => setDbArticles(data))
+      .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
 
-  const displayArticles = loading ? [] : (articles.length > 0 ? articles : staticArticles)
+  // Always show static articles + any new ones from the database
+  // Filter out db articles whose slug matches a static one to avoid duplicates
+  const staticSlugs = new Set(staticArticles.map(a => a.slug))
+  const newDbArticles = dbArticles.filter(a => !staticSlugs.has(a.slug))
+  const displayArticles = loading ? [] : [...newDbArticles, ...staticArticles]
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
